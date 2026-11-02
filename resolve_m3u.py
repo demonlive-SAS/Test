@@ -4,7 +4,7 @@ resolve_m3u.py - Resolve the final (real) URL behind a .ts / stream link
 and write the result to an M3U playlist.
 
 Usage:
-    python resolve_m3u.py "http://example.com/live/stream.ts"
+    python resolve_m3u.py "https://streamzline.xyz/live/Xp697Y4Kpu4l/DqNEfHKu2qsC/2071585.ts"
     python resolve_m3u.py url1 url2 url3 -o playlist.m3u
     python resolve_m3u.py -f links.txt -o playlist.m3u
 
