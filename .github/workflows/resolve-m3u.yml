@@ -1,0 +1,65 @@
+name: Resolve M3U Playlist
+
+# Manual trigger only: no schedule, no push/PR triggers
+on:
+  workflow_dispatch:
+    inputs:
+      links:
+        description: "Stream links, one per line (optional: url,Channel Name)"
+        required: true
+        type: string
+      output:
+        description: "Playlist file name"
+        required: false
+        default: "playlist.m3u"
+        type: string
+      commit:
+        description: "Commit the playlist back to the repo"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Write links file
+        env:
+          LINKS: ${{ inputs.links }}
+        run: printf '%s\n' "$LINKS" > links.txt
+
+      - name: Resolve links and build playlist
+        env:
+          OUTPUT: ${{ inputs.output }}
+        run: python resolve_m3u.py -f links.txt -o "$OUTPUT"
+
+      - name: Upload playlist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: playlist
+          path: ${{ inputs.output }}
+
+      - name: Commit playlist
+        if: ${{ inputs.commit }}
+        env:
+          OUTPUT: ${{ inputs.output }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$OUTPUT"
+          git diff --cached --quiet || git commit -m "Update $OUTPUT"
+          git push
