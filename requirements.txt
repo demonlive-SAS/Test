@@ -1,2 +1,2 @@
-pip install playwright
-playwright install
+pip install requests
+python resolve_m3u.py "http://example.com/live/stream.ts" -o playlist.m3u
