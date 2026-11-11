@@ -1,0 +1,34 @@
+name: Clear Git History and Keep Current Files
+
+on:
+  schedule:
+    - cron: "0 3 * * 1"   # Sunday 10:00 PM CDT (Monday 03:00 UTC)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: reset-history
+  cancel-in-progress: false
+
+jobs:
+  reset-history:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Configure Git author identity
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+
+      - name: Reset history
+        run: |
+          git checkout --orphan temp-branch
+          git add -A
+          git commit -m "Initial commit with current files only"
+          git push -f origin temp-branch:${{ github.event.repository.default_branch }} 
